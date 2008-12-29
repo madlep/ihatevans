@@ -1,0 +1,58 @@
+<%~ 
+  -include ("src/twitter.hrl").
+%>
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+  <title>i hate vans</title>
+  <link rel="stylesheet" href="stylesheet.css" type="text/css" media="screen" title="no title" charset="utf-8">
+  <script src="jquery.js"></script>
+  <script>
+    function updateTweet() {
+      $.getJSON("update.json",function(data){
+        $(".replaceable").fadeOut("fast", function() {
+          $("#francis_quote").html(data.francis_quote);
+          $("#from_url").attr("href", data.from_url);
+          $("#from").html(data.from);
+          $("#from_img").attr("src", data.from_img);
+          $("#from_quote").html(data.from_quote);
+          $(".replaceable").fadeIn("fast");
+        });
+      });
+    }
+  
+    $(document).ready(function(){
+      setInterval("updateTweet()", 5000);      
+    });
+  </script>
+</head>
+
+<body>
+  <h1>i hate vans</h1>
+  
+  <div id="francis" 
+    <div class="quote">
+      <h2>Francis Says</h2>
+      <div class="hates">
+        <div class="avatar"><img src="francis.jpg"/></div>
+        <div id="francis_quote" class="twitter_quote replaceable"><% [Data#tweet.francis_quote] %></div>
+      </div>
+    </div>
+  </div>
+  
+  <div id="twitterer">
+    <div class="quote">
+      <h2 class="replaceable">Because <a id="from_url" href="<% [Data#tweet.from_url] %>"><span id="from"><% [Data#tweet.from] %></span></a> said</h2>
+      <div class="hates">
+        <div class="avatar"><img id="from_img" class="replaceable" src="<% [Data#tweet.from_img] %>"/></div>
+        <div id="from_quote" class="twitter_quote replaceable"><% [Data#tweet.from_quote] %></div>
+      </div>
+    </div>
+  </div>
+  
+  <p><a href="whatthehell.html">What the hell?</a></p>
+  
+</body>
+</html>
