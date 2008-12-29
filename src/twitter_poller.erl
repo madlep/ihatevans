@@ -1,24 +1,19 @@
 -module (twitter_poller).
-
+-behaviour(gen_server).
 -include ("twitter.hrl").
 
--export ([start/0, update/0, tweets/0, loop/1, request_tweets/0, extract_field/2, random_tweet/0, loop_start/0]).
+-export([start_link/0]).
+-export([init/1, handle_call/3, handle_cast/2, code_change/3, handle_info/2, terminate/2]).
+-export([update/0, random_tweet/0]).
 
-start() ->
-  Pid = spawn(?MODULE, loop_start, []),
-  register(twitter_poller, Pid),
-  update().
+start_link() ->
+  gen_server:start_link({local, twitter_poller}, twitter_poller, [], []).
   
 update() ->
-  twitter_poller ! {set_tweets, request_tweets()},
-  ok.
+  gen_server:cast(twitter_poller, {update, request_tweets()}).
    
 tweets() ->
-  twitter_poller ! {get_tweets, self()},
-  receive
-    {tweets, Tweets} ->
-      Tweets
-  end.
+  gen_server:call(twitter_poller, tweets).
   
 random_tweet() ->
   Tweets = tweets(),
@@ -53,18 +48,21 @@ extract_field({"profile_image_url", ImageUrl}, Tweet) ->
 extract_field(_Field, Tweet) ->
   Tweet.
    
-loop_start() ->
+init(_Args) ->
   timer:apply_interval(60000, ?MODULE, update, []),
-  loop([request_tweets()]).
+  {ok, request_tweets()}.
   
-loop(Tweets) ->
-  receive
-    {set_tweets, NewTweets} ->
-      loop(NewTweets);
-    {get_tweets, From} ->
-      From ! {tweets, Tweets},
-      loop(Tweets);
-    Any -> 
-      io:format("Received ~p~n", [Any]),
-      loop(Tweets)
-  end.
+handle_cast({update, NewTweets}, _Tweets) ->
+  {noreply, NewTweets}.
+  
+handle_call(tweets, _From, Tweets) ->
+  {reply, Tweets, Tweets}.
+  
+handle_info(_Info, State) ->
+  {noreply, State}.
+  
+code_change(_OldVsn, State, _Extra) ->
+  {ok, State}.
+  
+terminate(_Reason, _State) ->
+  ok.
