@@ -1,3 +1,4 @@
 #!/bin/sh
 cd `dirname $0`
-exec erl -pa $PWD/ebin $PWD/deps/*/ebin -boot start_sasl -s ihatevans
+#-detached -mode embedded -noinput -noshell 
+erl -detached -sname mochiweb_ihatevans -pa $PWD/ebin $PWD/deps/*/ebin -boot start_sasl -s ihatevans
