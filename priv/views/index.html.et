@@ -12,14 +12,18 @@
   <script>
     function updateTweet() {
       $.getJSON("update.json",function(data){
-        $(".replaceable").fadeOut("fast", function() {
-          $("#francis_quote").html(data.francis_quote);
-          $("#from_url").attr("href", data.from_url);
-          $("#from").html(data.from);
-          $("#from_img").attr("src", data.from_img);
-          $("#from_quote").html(data.from_quote);
-          $(".replaceable").fadeIn("fast");
-        });
+        avatar_image = new Image();
+        avatar_image.onload = function() {
+          $(".replaceable").fadeOut("fast", function() {
+            $("#francis_quote").html(data.francis_quote);
+            $("#from_url").attr("href", data.from_url);
+            $("#from").html(data.from);
+            $("#from_img").attr("src", data.from_img);
+            $("#from_quote").html(data.from_quote);
+            $(".replaceable").fadeIn("fast");
+          });
+        }
+        avatar_image.src=data.from_img;
       });
     }
   
