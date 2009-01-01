@@ -35,10 +35,10 @@ loop(Req, DocRoot) ->
             case Path of
                 "" ->
                   % erltl:compile("priv/views/index.html.et"),
-                  Req:ok({"text/html", list_to_binary(index.html:render(twitter_poller:random_tweet()))});
+                  Req:ok({"text/html", index.html:render(twitter_poller:random_tweet())});
                 "update.json" ->
                   % erltl:compile("priv/views/update.json.et"),
-                  Req:ok({"	application/x-javascript; charset=utf-8", list_to_binary(update.json:render(twitter_poller:random_tweet()))});
+                  Req:ok({"application/x-javascript; charset=utf-8", update.json:render(twitter_poller:random_tweet())});
                 _ ->
                     Req:serve_file(Path, DocRoot)
             end;

@@ -4,7 +4,7 @@
 
 -export([start_link/0]).
 -export([init/1, handle_call/3, handle_cast/2, code_change/3, handle_info/2, terminate/2]).
--export([update/0, random_tweet/0]).
+-export([update/0, random_tweet/0, tweets/0]).
 
 start_link() ->
   gen_server:start_link({local, twitter_poller}, twitter_poller, [], []).
@@ -16,9 +16,7 @@ tweets() ->
   gen_server:call(twitter_poller, tweets).
   
 random_tweet() ->
-  Tweets = tweets(),
-  TweetLength = length(Tweets),
-  lists:nth(random:uniform(TweetLength), Tweets).
+  gen_server:call(twitter_poller, random_tweet).
 
 request_tweets() ->
   {ok, {_Status, _Headers, TwitterJson}} = http:request("http://search.twitter.com/search.json?q=%22i+hate%22"),
@@ -53,10 +51,14 @@ init(_Args) ->
   {ok, request_tweets()}.
   
 handle_cast({update, NewTweets}, _Tweets) ->
-  {noreply, NewTweets}.
+  FilteredTweets = lists:filter(fun(Tweet) -> Tweet#tweet.francis_quote =/= undefined end, NewTweets),
+  {noreply, FilteredTweets}.
   
 handle_call(tweets, _From, Tweets) ->
-  {reply, Tweets, Tweets}.
+  {reply, Tweets, Tweets};
+handle_call(random_tweet, _From, Tweets) ->
+  TweetLength = length(Tweets),
+  {reply, lists:nth(random:uniform(TweetLength), Tweets), Tweets}.
   
 handle_info(_Info, State) ->
   {noreply, State}.
