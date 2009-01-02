@@ -14,7 +14,6 @@
 %% @doc application start callback for ihatevans.
 start(_Type, _StartArgs) ->
     ihatevans_deps:ensure(),
-    twitter_poller:start_link(),
     ihatevans_sup:start_link().
 
 %% @spec stop(_State) -> ServerRet

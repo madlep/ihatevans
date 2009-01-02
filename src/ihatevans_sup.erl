@@ -49,6 +49,9 @@ init([]) ->
     Web = {ihatevans_web,
            {ihatevans_web, start, [WebConfig]},
            permanent, 5000, worker, dynamic},
+    
+    TwitterPoller = {twitter_poller,
+                      {twitter_poller, start_link, []}, permanent, 5000, worker, [twitter_poller]},
 
-    Processes = [Web],
+    Processes = [Web, TwitterPoller],
     {ok, {{one_for_one, 10, 10}, Processes}}.
