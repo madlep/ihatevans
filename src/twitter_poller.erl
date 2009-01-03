@@ -22,6 +22,8 @@
 -behaviour(gen_server).
 -include ("twitter.hrl").
 
+-define (TWITTER_URL, "http://search.twitter.com/search.json?q=%22i+hate%22").
+
 -export([start_link/0]).
 -export([init/1, handle_call/3, handle_cast/2, code_change/3, handle_info/2, terminate/2]).
 -export([update/0, random_tweet/0, tweets/0]).
@@ -39,8 +41,7 @@ random_tweet() ->
   gen_server:call(twitter_poller, random_tweet).
 
 request_tweets() ->
-  {ok, {_Status, _Headers, TwitterJson}} = http:request("http://search.twitter.com/search.json?q=%22i+hate%22"),
-  % {ok, {obj, DecodedJson}, _Remainder} = rfc4627:decode(TwitterJson),
+  {ok, {_Status, _Headers, TwitterJson}} = http:request(get, {?TWITTER_URL, [{"User-Agent", "ihatevans.com twitter_poller"}]}, [], []),
   {struct, DecodedJson} = mochijson2:decode(TwitterJson),
   [Results | _QueryMetaData] = DecodedJson,
   {<<"results">>, JsonTweets} = Results,
