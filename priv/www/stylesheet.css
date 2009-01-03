@@ -13,6 +13,13 @@ h1 {
   color: #fc2;
   letter-spacing: -12px;
   font-family: "Lucida Grande", "Trebuchet MS", Verdana, sans-serif;
+  display: inline;
+}
+
+#van {
+  padding-top: 20px;
+  padding-left: 20px;
+  vertical-align: bottom;
 }
 
 .quote {

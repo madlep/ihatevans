@@ -6,52 +6,51 @@
 -module(ihatevans_web).
 -author('author <author@example.com>').
 
+-include ("twitter.hrl").
+
 -export([start/1, stop/0, loop/2]).
 
 %% External API
 
-start(Options) ->
-    ViewDir = "priv/views",
-    {ok, Views} = file:list_dir(ViewDir),
-    lists:foreach(
-      fun(FileName) -> 
-        erltl:compile(filename:join(ViewDir, FileName)) 
-      end, Views),
-    
-    {DocRoot, Options1} = get_option(docroot, Options),
-    Loop = fun (Req) ->
-                   ?MODULE:loop(Req, DocRoot)
-           end,
-    mochiweb_http:start([{name, ?MODULE}, {loop, Loop} | Options1]).
+start(Options) ->    
+  {DocRoot, Options1} = get_option(docroot, Options),
+  Loop = fun (Req) ->
+    ?MODULE:loop(Req, DocRoot)
+  end,
+  mochiweb_http:start([{name, ?MODULE}, {loop, Loop} | Options1]).
 
 stop() ->
-    mochiweb_http:stop(?MODULE).
+  mochiweb_http:stop(?MODULE).
 
 loop(Req, DocRoot) ->
-    "/" ++ Path = Req:get(path),
-    % io:format("Path:~p~n", [Path]),
-    case Req:get(method) of
-        Method when Method =:= 'GET'; Method =:= 'HEAD' ->
-            case Path of
-                "" ->
-                  % erltl:compile("priv/views/index.html.et"),
-                  Req:ok({"text/html", index.html:render(twitter_poller:random_tweet())});
-                "update.json" ->
-                  % erltl:compile("priv/views/update.json.et"),
-                  Req:ok({"application/x-javascript; charset=utf-8", update.json:render(twitter_poller:random_tweet())});
-                _ ->
-                    Req:serve_file(Path, DocRoot)
-            end;
-        'POST' ->
-            case Path of
-                _ ->
-                    Req:not_found()
-            end;
-        _ ->
-            Req:respond({501, [], []})
+  "/" ++ Path = Req:get(path),
+  case Req:get(method) of 
+    Method when Method =:= 'GET'; Method =:= 'HEAD' ->
+      dispatch(Req, Path, DocRoot);
+    'POST' ->
+      Req:not_found();
+    _ ->
+      Req:respond({501, [], []})
     end.
 
 %% Internal API
+
+%% send JSON update
+dispatch(Req, "update.json", _DocRoot) ->
+  Tweet = twitter_poller:random_tweet(),
+  JsonTerm = {struct, [
+    {<<"francis_quote">>, list_to_binary(Tweet#tweet.francis_quote)},
+    {<<"from">>,          Tweet#tweet.from},
+    {<<"from_url">>,      Tweet#tweet.from_url},
+    {<<"from_img">>,      Tweet#tweet.from_img},
+    {<<"from_quote">>,    Tweet#tweet.from_quote}
+  ]},
+  EncodedJson = mochijson2:encode(JsonTerm),
+  Req:ok({"application/x-javascript; charset=utf-8", EncodedJson});
+
+%% send a static file
+dispatch(Req, Path, DocRoot) ->
+  Req:serve_file(Path, DocRoot).
 
 get_option(Option, Options) ->
     {proplists:get_value(Option, Options), proplists:delete(Option, Options)}.
