@@ -1,0 +1,1 @@
+-record(tweet, {francis_quote, from, from_url, from_img, from_quote}).
