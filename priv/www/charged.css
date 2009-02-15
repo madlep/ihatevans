@@ -1,0 +1,22 @@
+#charged_banner {
+  font: bold 14px Verdana,Arial,sans-serif;
+  background-color: #C40;
+  width: 100%;
+  padding: 5px 0px;
+  height: 17px;
+}
+
+#charged_banner ul {
+  margin: 0;
+  padding: 0;
+}
+
+#charged_banner li {
+  display: inline;
+  padding: 0em 1em;
+}
+
+#charged_banner a {
+  color: #fff;
+  text-decoration: none;
+}
