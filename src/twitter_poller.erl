@@ -50,14 +50,26 @@ request_tweets() ->
       {struct,Fields} = JsonTweet,
       lists:foldl(fun(Field, Tweet) -> extract_field(Field, Tweet) end, #tweet{}, Fields)
     end, JsonTweets),
-  io:format("got ~p tweets ~n", [length(Tweets)]),
-  Tweets.
+  FilteredTweets = lists:filter(fun(Tweet) -> Tweet#tweet.francis_quote =/= undefined end, Tweets),
+  JsonEncodedTweets = lists:map(
+    fun(Tweet) ->
+      JsonTerm = {struct, [
+        {<<"francis_quote">>, Tweet#tweet.francis_quote},
+        {<<"from">>,          Tweet#tweet.from},
+        {<<"from_url">>,      Tweet#tweet.from_url},
+        {<<"from_img">>,      Tweet#tweet.from_img},
+        {<<"from_quote">>,    Tweet#tweet.from_quote}
+      ]},
+      mochijson2:encode(JsonTerm)
+    end, FilteredTweets),
+  io:format("got ~p tweets ~n", [length(JsonEncodedTweets)]),
+  JsonEncodedTweets.
 
 extract_field({<<"text">>, Text}, Tweet) ->
   Match = re:run(Text, "i hate(((http|www).*?(\\s|$))|.)*?(\\.|\\!|\\?|$)+", [{capture, first, binary}, caseless]),
   case Match of
     {match, FrancisQuote} ->
-        Tweet#tweet{from_quote=Text, francis_quote=FrancisQuote};
+        Tweet#tweet{from_quote=Text, francis_quote=list_to_binary(FrancisQuote)};
     nomatch ->
       Tweet#tweet{from_quote=Text}
   end;
@@ -73,8 +85,7 @@ init(_Args) ->
   {ok, request_tweets()}.
   
 handle_cast({update, NewTweets}, _Tweets) ->
-  FilteredTweets = lists:filter(fun(Tweet) -> Tweet#tweet.francis_quote =/= undefined end, NewTweets),
-  {noreply, FilteredTweets}.
+  {noreply, NewTweets}.
   
 handle_call(tweets, _From, Tweets) ->
   {reply, Tweets, Tweets};

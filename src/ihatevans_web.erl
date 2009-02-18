@@ -55,15 +55,7 @@ loop(Req, DocRoot) ->
 %% send JSON update
 dispatch(Req, "update.json", _DocRoot) ->
   Tweet = twitter_poller:random_tweet(),
-  JsonTerm = {struct, [
-    {<<"francis_quote">>, list_to_binary(Tweet#tweet.francis_quote)},
-    {<<"from">>,          Tweet#tweet.from},
-    {<<"from_url">>,      Tweet#tweet.from_url},
-    {<<"from_img">>,      Tweet#tweet.from_img},
-    {<<"from_quote">>,    Tweet#tweet.from_quote}
-  ]},
-  EncodedJson = mochijson2:encode(JsonTerm),
-  Req:ok({"application/x-javascript; charset=utf-8", EncodedJson});
+  Req:ok({"application/x-javascript; charset=utf-8", Tweet});
 
 %% send a static file
 dispatch(Req, Path, DocRoot) ->
